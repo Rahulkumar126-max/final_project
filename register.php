@@ -2,168 +2,123 @@
 session_start();
 require 'db.php';
 
-$message = '';
+// Show errors for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+$message = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $password = $_POST['password'];
-    $role = $_POST['role'];
+    // Trim inputs
+    $username = trim($_POST['username'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
-    if (empty($username) || empty($password) || empty($role)) {
-        $message = "Please fill in all fields.";
+    // Check for empty fields
+    if (empty($username) || empty($email) || empty($password)) {
+        $message = "All fields are required.";
     } else {
-        // Warden limit check
-        if ($role === 'warden') {
-            $checkWarden = $conn->query("SELECT COUNT(*) as total FROM users WHERE role = 'warden'");
-            $result = $checkWarden->fetch_assoc();
-            if ($result['total'] >= 2) {
-                $message = "Maximum 2 warden registrations allowed.";
-            }
-        }
+        // Check if email already exists
+        $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $check_stmt->bind_param("s", $email);
+        $check_stmt->execute();
+        $check_stmt->store_result();
 
-        if (!$message) {
-            // Check if username exists
-            $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $stmt->store_result();
+        if ($check_stmt->num_rows > 0) {
+            $message = "Email already registered. Try logging in.";
+        } else {
+            // Hash the password securely
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-            if ($stmt->num_rows > 0) {
-                $message = "Username already taken.";
+            // Insert new user
+            $insert_stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+            $insert_stmt->bind_param("sss", $username, $email, $hashed_password);
+
+            if ($insert_stmt->execute()) {
+                $message = "Registration successful! <a href='login.php'>Login here</a>";
             } else {
-                // Register new user
-                $hash = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-                $stmt->bind_param("sss", $username, $hash, $role);
-                if ($stmt->execute()) {
-                    $_SESSION['user_id'] = $conn->insert_id;
-                    $_SESSION['username'] = $username;
-                    $_SESSION['role'] = $role;
-                    if ($role === 'warden') {
-                        header("Location: warden.php");
-                    } else {
-                        header("Location: dashboard.php");
-                    }
-                    exit();
-                } else {
-                    $message = "Registration failed. Please try again.";
-                }
+                $message = "Registration failed. Please try again.";
             }
-            $stmt->close();
+
+            $insert_stmt->close();
         }
+
+        $check_stmt->close();
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<title>Register - GECV Hostel Complaint Portal</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
-    animation: changeBG 8s infinite alternate;
-  }
+    <title>Register - Hostel Complaint Portal</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-  @keyframes changeBG {
-    0% { background-color: #f0f2f5; }
-    50% { background-color: #dfe9f3; }
-    100% { background-color: #f0f2f5; }
-  }
+        .form-box {
+            background-color: white;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+        }
 
-  .container {
-    max-width: 400px;
-    margin: 50px auto;
-    background: white;
-    padding: 25px 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-  }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
 
-  h2 {
-    text-align: center;
-    color: #007bff;
-    margin-bottom: 20px;
-  }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
 
-  input[type="text"],
-  input[type="password"],
-  select {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0 20px 0;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box;
-    transition: 0.3s;
-  }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1e88e5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
-  input[type="text"]:focus,
-  input[type="password"]:focus,
-  select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0,123,255,0.5);
-    outline: none;
-  }
+        button:hover {
+            background-color: #1565c0;
+        }
 
-  button {
-    width: 100%;
-    padding: 12px;
-    background-color: #007bff;
-    border: none;
-    color: white;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #0056b3;
-  }
-
-  .message {
-    color: red;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
-  .login-link {
-    text-align: center;
-    margin-top: 15px;
-  }
-
-  .login-link a {
-    color: #007bff;
-    text-decoration: none;
-  }
-
-  .login-link a:hover {
-    text-decoration: underline;
-  }
-</style>
+        .message {
+            text-align: center;
+            color: red;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-  <h2>Register - GECV Hostel Complaint Portal</h2>
-  <?php if ($message): ?>
-    <p class="message"><?= htmlspecialchars($message) ?></p>
-  <?php endif; ?>
-  <form method="POST" action="">
-    <input type="text" name="username" placeholder="Username" required autocomplete="off" />
-    <input type="password" name="password" placeholder="Password" required />
-    <select name="role" required>
-      <option value="">Select Role</option>
-      <option value="student">Student</option>
-      <option value="warden">Warden</option>
-    </select>
-    <button type="submit">Register</button>
-  </form>
-  <div class="login-link">
-    Already have an account? <a href="login.php">Login here</a>
-  </div>
-</div>
+    <div class="form-box">
+        <h2>Register</h2>
+        <form method="POST" action="register.php">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Register</button>
+        </form>
+        <div class="message"><?= $message ?></div>
+    </div>
 </body>
 </html>

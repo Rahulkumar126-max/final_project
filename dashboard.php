@@ -32,94 +32,149 @@ $stmt->close();
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f8fb;
-    margin: 0;
-    padding: 0;
-}
+    * {
+      box-sizing: border-box;
+    }
 
-header {
-    background-color: #1e88e5;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    font-size: 26px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
 
-.container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    border-radius: 12px;
-}
+    header {
+      background-color: #007bff;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
 
-h2 {
-    color: #333;
-    text-align: center;
-    margin-bottom: 30px;
-}
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
 
-.complaint {
-    background-color: #e3f2fd;
-    border-left: 5px solid #2196f3;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-}
+    header .logout {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+    }
 
-.complaint strong {
-    display: inline-block;
-    width: 100px;
-    color: #0d47a1;
-}
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
 
-.status {
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    display: inline-block;
-}
+    h2 {
+      color: #007bff;
+      margin-top: 0;
+    }
 
-.status.Pending {
-    background-color: #fff3cd;
-    color: #856404;
-}
+    form {
+      display: grid;
+      gap: 15px;
+    }
 
-.status["In Progress"] {
-    background-color: #d1ecf1;
-    color: #0c5460;
-}
+    form label {
+      font-weight: 600;
+    }
 
-.status.Resolved {
-    background-color: #d4edda;
-    color: #155724;
-}
+    select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
 
-.logout-btn {
-    display: inline-block;
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #e53935;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background 0.3s;
-}
+    textarea {
+      resize: vertical;
+      height: 120px;
+    }
 
-.logout-btn:hover {
-    background-color: #c62828;
-}
-</style>
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-weight: bold;
+    }
 
-    
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .status-pending {
+      color: #e67e22;
+      font-weight: bold;
+    }
+
+    .status-resolved {
+      color: #27ae60;
+      font-weight: bold;
+    }
+
+    .status-inprogress {
+      color: #2980b9;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f1f1;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+    }
+
+    .error {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
 
